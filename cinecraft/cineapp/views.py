@@ -18,6 +18,10 @@ def register_view(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
+        if not username or not email or not password:
+            messages.error(request, "Please fill in all required fields.")
+            return redirect('register')
+
         if password != confirm_password:
             messages.error(request, "Passwords do not match.")
             return redirect('register')
@@ -30,12 +34,14 @@ def register_view(request):
             messages.error(request, "Email already registered.")
             return redirect('register')
 
-    user = User.objects.create_user(username=username, email=email, password=password)
-    user.is_active = True  # Ensure user is active on registration
-    user.save()
-    messages.success(request, "Account created successfully! Please log in.")
-    return redirect('login')
+        # Create the user (only inside POST)
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.is_active = True  # Ensure user is active on registration
+        user.save()
+        messages.success(request, "Account created successfully! Please log in.")
+        return redirect('login')
 
+    # GET or other methods: render registration form
     return render(request, 'register.html')
 
 # Login

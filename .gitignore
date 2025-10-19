@@ -1,0 +1,31 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual Environments
+venv/
+.env/
+.venv/
+
+# Distribution / packaging
+*.egg-info/
+*.egg
+*.whl
+
+# Django
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# Deployment artifacts
+*cinecraft_deployment_*.zip
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
