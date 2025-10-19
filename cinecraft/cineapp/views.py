@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -7,7 +10,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import DepartmentProfileForm
-from .models import DepartmentProfile
+from .models import DepartmentProfile, OTPCode
 
 
 # Register
@@ -76,6 +79,78 @@ def login_view(request):
         return redirect('login')
 
     return render(request, 'login.html')
+
+
+def _generate_otp(length=6):
+    return ''.join(random.choices(string.digits, k=length))
+
+
+def request_otp_view(request):
+    """Step 1: user submits email to request an OTP for login."""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "No account found for that email.")
+            return redirect('login')
+
+        if user.is_staff or user.is_superuser:
+            messages.info(request, "Please use the Django Admin to sign in as an administrator.")
+            return redirect('/admin/login/?next=/admin/')
+
+        if not user.is_active:
+            messages.error(request, "Your account has been deactivated.")
+            return redirect('login')
+
+        code = _generate_otp()
+        OTPCode.objects.create(user=user, code=code)
+
+        # send email with OTP
+        try:
+            send_mail(
+                'Your CineCraft login code',
+                f'Your one-time login code is: {code}',
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+        request.session['otp_user_id'] = user.id
+        messages.success(request, "OTP sent to your email. Please enter the code to continue.")
+        return redirect('verify_otp')
+    return redirect('login')
+
+
+def verify_otp_view(request):
+    """Step 2: verify the OTP and log the user in."""
+    if request.method == 'POST':
+        user_id = request.session.get('otp_user_id')
+        code = request.POST.get('code', '').strip()
+        if not user_id:
+            messages.error(request, "Session expired. Please request a new code.")
+            return redirect('login')
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            messages.error(request, "Invalid session. Please request a new code.")
+            return redirect('login')
+
+        otp = OTPCode.objects.filter(user=user, code=code, used=False).order_by('-created_at').first()
+        if not otp or not otp.is_valid():
+            messages.error(request, "Invalid or expired code.")
+            return redirect('verify_otp')
+
+        # mark used and log in user
+        otp.mark_used()
+        login(request, user)
+        request.session.pop('otp_user_id', None)
+        messages.success(request, "Logged in successfully.")
+        return redirect('dashboard')
+
+    return render(request, 'verify_otp.html')
 
 # Dashboard
 @login_required(login_url='login')

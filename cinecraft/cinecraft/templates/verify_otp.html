@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Verify OTP</title>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+  <main class="auth-wrapper">
+    <section class="auth-card">
+      <h2 class="auth-title">Enter one-time code</h2>
+      <p class="auth-subtitle">We sent a code to your email. Enter it below to continue.</p>
+
+      <form method="POST" action="{% url 'verify_otp' %}">
+        {% csrf_token %}
+        <div class="form-row"><label for="code">Code</label><input id="code" name="code" type="text" placeholder="6-digit code" required></div>
+        <div class="form-actions"><button class="button" type="submit">Verify</button></div>
+      </form>
+
+      <p style="margin-top:18px;">Didn't get a code? <a class="muted-link" href="{% url 'request_otp' %}">Resend</a></p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message show {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    </section>
+  </main>
+  <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

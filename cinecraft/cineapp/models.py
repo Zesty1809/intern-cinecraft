@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class DepartmentProfile(models.Model):
@@ -63,7 +64,6 @@ class DepartmentProfile(models.Model):
         choices=APPROVAL_CHOICES,
         default="pending",
         db_index=True,
-        blank=True,
     )
 
     # optional convenience: ensure guid/application_id populated
@@ -77,3 +77,24 @@ class DepartmentProfile(models.Model):
 
     def __str__(self):
         return f"{self.full_name} - {self.department_name}"
+
+
+class OTPCode(models.Model):
+    """One-time passcodes for two-step login verification."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='otp_codes'
+    )
+    code = models.CharField(max_length=8)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+
+    def is_valid(self, expiry_minutes=10):
+        if self.used:
+            return False
+        return (timezone.now() - self.created_at).total_seconds() < expiry_minutes * 60
+
+    def mark_used(self):
+        self.used = True
+        self.save()
