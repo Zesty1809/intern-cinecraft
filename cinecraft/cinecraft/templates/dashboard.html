@@ -8,38 +8,9 @@
 </head>
 <body>
   <div class="container">
-    
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="logo">🎬 24 Cine Crafts</div>
-      <ul class="menu">
-        <li><a href="{% url 'dynamic_form' 'editing' %}">Editing Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'exhibitor' %}">Exhibitor</a></li>
-        <li><a href="{% url 'dynamic_form' 'field-publicity' %}">Field Publicity</a></li>
-        <li><a href="{% url 'dynamic_form' 'film-distributor' %}">Film Distributor</a></li>
-        <li><a href="{% url 'dynamic_form' 'film-processing-lab' %}">Film Processing Lab</a></li>
-        <li><a href="{% url 'dynamic_form' 'make-up' %}">Make Up Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'media-publicity' %}">Media Publicity</a></li>
-        <li><a href="{% url 'dynamic_form' 'music' %}">Music Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'outdoor-unit' %}">Outdoor Unit</a></li>
-        <li><a href="{% url 'dynamic_form' 'processing-lab' %}">Processing Lab</a></li>
-        <li><a href="{% url 'dynamic_form' 'producer' %}">Producer</a></li>
-        <li><a href="{% url 'dynamic_form' 'publicity-designer' %}">Publicity Designer</a></li>
-        <li><a href="{% url 'dynamic_form' 'sets-locations' %}">Sets and Locations</a></li>
-        <li><a href="{% url 'dynamic_form' 'sound-mixing' %}">Sound / Mixing Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'still' %}">Still Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'story' %}">Story Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'stunt-fight' %}">Stunt / Fight Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'administrative' %}">Administrative Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'art' %}">Art Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'artists' %}">Artists</a></li>
-        <li><a href="{% url 'dynamic_form' 'choreographer' %}">Choreographer</a></li>
-        <li><a href="{% url 'dynamic_form' 'cinematographer' %}">Cinematographer</a></li>
-        <li><a href="{% url 'dynamic_form' 'costume' %}">Costume Department</a></li>
-        <li><a href="{% url 'dynamic_form' 'direction' %}">Direction Department</a></li>
 
-      </ul>
-    </aside>
+    <!-- Sidebar (included partial) -->
+    {% include 'includes/sidebar.html' %}
 
     <!-- Main Content -->
     <main class="content">

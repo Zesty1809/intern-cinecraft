@@ -4,11 +4,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // Auto-hide messages after 2.5 seconds
   var messages = document.querySelectorAll('.message.show');
   if (messages.length) {
-    setTimeout(function() {
-      messages.forEach(function(msg) {
+    messages.forEach(function(msg) {
+      // OTP messages stay longer (7s); others hide earlier (2.5s)
+      var timeout = msg.classList.contains('otp') ? 7000 : 2500;
+      setTimeout(function() {
         msg.classList.remove('show');
         msg.style.display = 'none';
-      });
-    }, 2500);
+      }, timeout);
+    });
   }
 });

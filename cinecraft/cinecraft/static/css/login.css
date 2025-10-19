@@ -1,3 +1,5 @@
+@import url('global.css');
+
 /* Admin login divider and alignment */
 .admin-login-divider {
   margin: 32px 0 0 0;
@@ -26,7 +28,6 @@
   gap: 8px;
 }
 /* ---------- login.css (final minimal) ---------- */
-@import url('global.css');
 
 /* Layout */
 .auth-wrapper {
@@ -175,6 +176,18 @@ input:focus {
   color: #bbf7d0;
 }
 
+/* OTP-specific: short, bold, red, stay visible a bit longer */
+.message.otp {
+  /* Strong red look that overrides other message styles */
+  background: rgba(220, 38, 38, 0.12); /* slightly transparent red */
+  border: 1px solid rgba(220, 38, 38, 0.9);
+  color: #fee2e2 !important; /* pale red text, force override */
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(220,38,38,0.08);
+  padding: 12px 14px;
+}
+
 /* Small screen tweaks */
 @media (max-width: 380px) {
   .auth-card { padding: 22px 18px; }
@@ -186,3 +199,7 @@ input:focus {
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; }
 }
+
+/* Ensure the page background from global.css is visible and not hidden by auth wrapper */
+body { background: var(--bg-gradient); }
+.auth-wrapper { background: transparent; }

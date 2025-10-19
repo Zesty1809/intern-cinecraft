@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -75,8 +75,16 @@ def login_view(request):
 
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            login(request, user)
-            return redirect('dashboard')
+            # password correct — require OTP verification before completing login
+            ok, msg = _send_totp_to_user(request, user)
+            if not ok:
+                messages.error(request, msg or "Unable to send OTP. Please try again.")
+                return redirect('login')
+            # keep user id in session but don't log them in yet
+            # Short, attention-grabbing client message; add 'otp' extra tag for styling
+            info_msg = "Code sent — check your email."
+            messages.info(request, info_msg, extra_tags='otp')
+            return redirect('verify_otp')
         messages.error(request, "Invalid email or password.")
         return redirect('login')
 
@@ -85,6 +93,59 @@ def login_view(request):
 
 def _generate_otp(length=6):
     return ''.join(random.choices(string.digits, k=length))
+
+
+def _send_totp_to_user(request, user):
+    """Ensure a TOTPDevice exists for user, enforce rate limits, send current TOTP to email, and set session state."""
+    device, created = TOTPDevice.objects.get_or_create(user=user, defaults={
+        'secret': pyotp.random_base32()
+    })
+
+    now = timezone.now()
+    if device.last_send_count_reset and (now - device.last_send_count_reset).total_seconds() > 3600:
+        device.reset_send_counts()
+
+    if device.send_count_hour >= 6:
+        return False, "Too many OTP requests. Please try again later."
+
+    device.increment_send()
+    totp = pyotp.TOTP(device.secret)
+    code = totp.now()
+
+    try:
+        subject = 'Your CineCraft login code'
+        text_content = f"Your one-time login code is: {code}\n\nThis code is valid for a short time. If you did not request this, please ignore this email."
+        html_content = f"""
+<html>
+  <body style="font-family: Arial, Helvetica, sans-serif; color: #333;">
+    <div style="max-width:600px;margin:0 auto;padding:20px;border:1px solid #eaeaea;border-radius:6px;">
+      <h2 style="margin-top:0;color:#1a73e8;">24 Cine Crafts</h2>
+      <p style="font-size:15px;">Hello {user.get_full_name() or user.username},</p>
+      <p style="font-size:16px;">Use the code below to complete your sign in to <strong>24 Cine Crafts</strong>:</p>
+      <p style="font-size:24px;letter-spacing:4px;font-weight:700;background:#f7f9ff;padding:12px 16px;display:inline-block;border-radius:4px;color:#111;">{code}</p>
+      <p style="color:#666;margin-top:12px;">This code is valid for a short time. Do not share it with anyone.</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:18px 0;">
+      <p style="font-size:12px;color:#999;">If you did not request this code, you can safely ignore this message.</p>
+    </div>
+  </body>
+</html>
+"""
+
+        msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [user.email])
+        msg.attach_alternative(html_content, "text/html")
+        msg.send(fail_silently=False)
+    except Exception as e:
+        print(f"Failed to send OTP email: {e}")
+        return False, "Failed to send email. Please check your email configuration."
+
+    # For easier local debugging (when using console email backend) print a short OTP line
+    if getattr(settings, 'DEBUG', False) and settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
+        print(f"OTP for {user.email}: {code}")
+
+    request.session['otp_user_id'] = user.pk
+    request.session['otp_user_id'] = user.pk
+    request.session['otp_preauth'] = True
+    return True, None
 
 
 def request_otp_view(request):
@@ -118,7 +179,6 @@ def request_otp_view(request):
         if device.send_count_hour >= 6:
             messages.error(request, "Too many OTP requests. Please try again later.")
             return redirect('login')
-
         device.increment_send()
 
         totp = pyotp.TOTP(device.secret)
@@ -126,18 +186,44 @@ def request_otp_view(request):
 
         # send email with OTP
         try:
-            send_mail(
-                'Your CineCraft login code',
-                f'Your one-time login code is: {code}',
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=True,
+            subject = 'Your CineCraft login code'
+            text_content = (
+                f"Your one-time login code is: {code}\n\n"
+                "This code is valid for a short time. If you did not request this, please ignore this email."
             )
+            html_content = f"""
+<html>
+  <body style="font-family: Arial, Helvetica, sans-serif; color: #333;">
+    <div style="max-width:600px;margin:0 auto;padding:20px;border:1px solid #eaeaea;border-radius:6px;">
+      <h2 style="margin-top:0;color:#1a73e8;">24 Cine Crafts</h2>
+      <p style="font-size:15px;">Hello {user.get_full_name() or user.username},</p>
+      <p style="font-size:16px;">Use the code below to complete your sign in to <strong>24 Cine Crafts</strong>:</p>
+      <p style="font-size:24px;letter-spacing:4px;font-weight:700;background:#f7f9ff;padding:12px 16px;display:inline-block;border-radius:4px;color:#111;">{code}</p>
+      <p style="color:#666;margin-top:12px;">This code is valid for a short time. Do not share it with anyone.</p>
+      <hr style="border:none;border-top:1px solid #eee;margin:18px 0;">
+      <p style="font-size:12px;color:#999;">If you did not request this code, you can safely ignore this message.</p>
+    </div>
+  </body>
+</html>
+"""
+
+            msg = EmailMultiAlternatives(subject, text_content, settings.DEFAULT_FROM_EMAIL, [user.email])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send(fail_silently=True)
         except Exception:
             pass
 
-        request.session['otp_user_id'] = user.id
-        messages.success(request, "OTP sent to your email. Please enter the code to continue.")
+        # ensure session tracks which user requested the otp
+        request.session['otp_user_id'] = user.pk
+        # Print short OTP line for developers running with console backend to avoid HTML noise
+        if getattr(settings, 'DEBUG', False) and settings.EMAIL_BACKEND.endswith('console.EmailBackend'):
+            try:
+                print(f"OTP for {user.email}: {code}")
+            except Exception:
+                pass
+
+        # Short success message with `otp` tag so the client can style it prominently
+        messages.success(request, "Code sent — check your email.", extra_tags='otp')
         return redirect('verify_otp')
     return redirect('login')
 
@@ -167,14 +253,30 @@ def verify_otp_view(request):
             return redirect('login')
 
         totp = pyotp.TOTP(device.secret)
-        if not totp.verify(code, valid_window=1):
+        if not totp.verify(code, valid_window=2):
             device.record_failed_attempt()
             messages.error(request, "Invalid or expired code.")
             return redirect('verify_otp')
 
         # success - reset counters and log in
         device.reset_attempts()
+        # ensure user has a backend string so login() can set the session
+        backend_path = None
+        if getattr(settings, 'AUTHENTICATION_BACKENDS', None):
+            backend_path = settings.AUTHENTICATION_BACKENDS[0]
+        else:
+            backend_path = 'django.contrib.auth.backends.ModelBackend'
+        try:
+            # assign backend path to user instance (used by login)
+            setattr(user, 'backend', backend_path)
+        except Exception:
+            pass
         login(request, user)
+        # ensure session is saved so test client sees authenticated user on redirect
+        try:
+            request.session.save()
+        except Exception:
+            pass
         request.session.pop('otp_user_id', None)
         messages.success(request, "Logged in successfully.")
         return redirect('dashboard')
@@ -223,6 +325,14 @@ def dashboard_view(request):
 
 # Logout
 def logout_view(request):
+    # Clear any existing queued messages so stale messages (e.g. "Logged in successfully")
+    # do not appear after logout. Consuming get_messages() empties the storage.
+    try:
+        list(messages.get_messages(request))
+    except Exception:
+        # If message storage is unavailable for any reason, ignore and continue
+        pass
+
     logout(request)
     messages.success(request, "Logged out successfully.")
     return redirect('login')

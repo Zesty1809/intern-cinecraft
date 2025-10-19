@@ -136,17 +136,27 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Email Configuration
-# For development: Console backend (prints emails to terminal)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email configuration
+# Use console backend automatically when DEBUG=True so OTP/emails print to the
+# terminal during development. You can still override by setting the
+# EMAIL_BACKEND environment variable.
 
-# For production with Gmail (uncomment and configure):
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'  # Use App Password, not regular password
-# DEFAULT_FROM_EMAIL = '24 Cine Crafts <your-email@gmail.com>'
+DEFAULT_FROM_EMAIL = os.environ.get(
+    'DEFAULT_FROM_EMAIL',
+    '24 Cine Crafts <' + os.environ.get('EMAIL_HOST_USER', 'noreply@24cinecrafts.com') + '>'
+)
 
-# For now using console backend for development
-DEFAULT_FROM_EMAIL = '24 Cine Crafts <noreply@24cinecrafts.com>'
+# If the environment explicitly sets EMAIL_BACKEND, respect that first.
+if os.environ.get('EMAIL_BACKEND'):
+    EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
+elif DEBUG:
+    # In development print emails to console so OTPs are visible in terminal
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # Production SMTP settings (used when DEBUG is False and no override)
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')  # Set via environment variable
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')  # Set via environment variable
