@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>24 Cine Crafts | Dashboard</title>
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}?v=2.2">
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">🎬 24 Cine Crafts</div>
+      <ul class="menu">
+        <li><a href="{% url 'dynamic_form' 'editing' %}">Editing Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'exhibitor' %}">Exhibitor</a></li>
+        <li><a href="{% url 'dynamic_form' 'field-publicity' %}">Field Publicity</a></li>
+        <li><a href="{% url 'dynamic_form' 'film-distributor' %}">Film Distributor</a></li>
+        <li><a href="{% url 'dynamic_form' 'film-processing-lab' %}">Film Processing Lab</a></li>
+        <li><a href="{% url 'dynamic_form' 'make-up' %}">Make Up Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'media-publicity' %}">Media Publicity</a></li>
+        <li><a href="{% url 'dynamic_form' 'music' %}">Music Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'outdoor-unit' %}">Outdoor Unit</a></li>
+        <li><a href="{% url 'dynamic_form' 'processing-lab' %}">Processing Lab</a></li>
+        <li><a href="{% url 'dynamic_form' 'producer' %}">Producer</a></li>
+        <li><a href="{% url 'dynamic_form' 'publicity-designer' %}">Publicity Designer</a></li>
+        <li><a href="{% url 'dynamic_form' 'sets-locations' %}">Sets and Locations</a></li>
+        <li><a href="{% url 'dynamic_form' 'sound-mixing' %}">Sound / Mixing Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'still' %}">Still Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'story' %}">Story Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'stunt-fight' %}">Stunt / Fight Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'administrative' %}">Administrative Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'art' %}">Art Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'artists' %}">Artists</a></li>
+        <li><a href="{% url 'dynamic_form' 'choreographer' %}">Choreographer</a></li>
+        <li><a href="{% url 'dynamic_form' 'cinematographer' %}">Cinematographer</a></li>
+        <li><a href="{% url 'dynamic_form' 'costume' %}">Costume Department</a></li>
+        <li><a href="{% url 'dynamic_form' 'direction' %}">Direction Department</a></li>
+
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+      <header class="topbar">
+        <h2>Welcome, {{ request.user.username }}</h2>
+        <div class="topbar-actions">
+          <a href="{% url 'dashboard' %}" class="btn">Home</a>
+          <a href="{% url 'logout' %}" class="btn btn-primary">Log out</a>
+        </div>
+      </header>
+
+      <section class="intro">
+        <h3>Welcome to 24 Cine Crafts</h3>
+        <p>Your gateway to the cinema industry professional network.</p>
+        
+        <!-- Platform Description -->
+        <div class="card" style="margin-top:20px;">
+          <p style="margin:0;color:#666;line-height:1.6;">
+            24 Cine Crafts is the premier platform connecting cinema professionals across all departments of the film industry. 
+            Whether you're in direction, editing, makeup, or any of our 24 specialized crafts, this is your space to 
+            showcase your expertise and connect with opportunities.
+          </p>
+        </div>
+
+        <!-- Getting Started Section -->
+        <div class="card" style="margin-top:20px;">
+          <h4>Getting Started</h4>
+          <p style="margin:0 0 12px 0;color:#666;">Select your craft department from the sidebar</p>
+          <ul style="margin:0;padding-left:20px;color:#666;line-height:1.8;">
+            <li>Your gateway to the cinema industry professional network</li>
+            <li>Your gateway to the cinema industry professional network</li>
+            <li>Your gateway to the cinema industry professional network</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Selected Craft Section (Interactive) -->
+      <section class="selected-craft-new card" id="selectedCraftSection" style="display:none;margin-top:20px;">
+        <h4>Selected Craft</h4>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:15px;">
+          <div>
+            <p style="margin:0;color:#888;font-size:14px;">You've selected</p>
+            <p id="selectedDepartmentName" style="margin:4px 0 0 0;font-size:18px;font-weight:600;color:#222;">Direction Department</p>
+          </div>
+          <button class="btn" style="pointer-events:none;opacity:0.7;">Selected</button>
+        </div>
+        <div style="margin-top:20px;padding:18px;background:#f9f9f9;border-radius:8px;">
+          <h5 style="margin:0 0 8px 0;color:#222;font-size:16px;" id="selectedDepartmentTitle">Film direction and creative vision</h5>
+          <p style="margin:0;color:#666;font-size:14px;line-height:1.6;" id="selectedDepartmentDesc">Click the button below to continue with your registration</p>
+        </div>
+        <a href="#" id="proceedToFormBtn" class="btn btn-primary" style="display:inline-block;margin-top:18px;padding:10px 24px;">Proceed to Profile Form</a>
+      </section>
+
+      {% if submitted_profiles and submitted_profiles|length > 0 %}
+      <!-- Submitted Applications Section -->
+      <section class="selected-craft card">
+        <h4>Your Submitted Applications</h4>
+        <ul style="list-style:none;padding:0;margin:0;">
+          {% for profile in submitted_profiles %}
+            <li style="margin-bottom:18px;padding:18px;background:#f9f9f9;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <span style="font-weight:600;font-size:16px;color:#222;">{{ profile.department_name|capfirst }} Department</span>
+                <br>
+                <span style="color:#666;font-size:13px;">Application ID: {{ profile.application_id }}</span>
+                <br>
+                <span style="color:#888;font-size:13px;">Submitted: {{ profile.created_at|date:'M d, Y' }}</span>
+              </div>
+              <div>
+                {% if profile.approval_status == 'pending' %}
+                  <span style="background:#fef3c7;color:#92400e;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;">Pending</span>
+                {% elif profile.approval_status == 'approved' %}
+                  <span style="background:#d1fae5;color:#065f46;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;">Approved</span>
+                {% elif profile.approval_status == 'rejected' %}
+                  <span style="background:#fee2e2;color:#991b1b;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;">Rejected</span>
+                {% elif profile.approval_status == 'inactive' %}
+                  <span style="background:#e5e7eb;color:#374151;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;">Inactive</span>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
+
+      <!-- Stats Section -->
+      <section class="stats">
+        <div class="stat-card"><strong>24</strong><br>Cinema Crafts</div>
+        <div class="stat-card"><strong>1000+</strong><br>Active Professionals</div>
+        <div class="stat-card"><strong>500+</strong><br>Projects Listed</div>
+      </section>
+
+      <!-- Drafts Section -->
+      <section class="drafts card" style="margin-top:32px;">
+        <h4>Drafts In Progress</h4>
+        {% if drafts and drafts|length > 0 %}
+          <ul style="list-style:none;padding:0;margin:0;">
+            {% for draft in drafts %}
+              <li style="margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <span style="font-weight:600;font-size:16px;color:#222;">{{ draft.department_name|capfirst }}</span>
+                  <span style="color:#888;font-size:13px;margin-left:8px;">(saved {{ draft.created_at|date:'M d, Y H:i' }})</span>
+                </div>
+                <a href="{% url 'dynamic_form' draft.department_name %}" class="btn btn-primary">Continue</a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p style="color:#888;margin:0;">No drafts in progress. Start a new profile from the sidebar!</p>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Department data
+    const departmentData = {
+      'editing': { title: 'Film Editing and Post-Production', desc: 'Click the button below to continue with your registration' },
+      'exhibitor': { title: 'Film Exhibition and Distribution', desc: 'Click the button below to continue with your registration' },
+      'field-publicity': { title: 'Field Marketing and Publicity', desc: 'Click the button below to continue with your registration' },
+      'film-distributor': { title: 'Film Distribution Services', desc: 'Click the button below to continue with your registration' },
+      'film-processing-lab': { title: 'Film Processing and Lab Services', desc: 'Click the button below to continue with your registration' },
+      'make-up': { title: 'Makeup and Beauty Department', desc: 'Click the button below to continue with your registration' },
+      'media-publicity': { title: 'Media Relations and Publicity', desc: 'Click the button below to continue with your registration' },
+      'music': { title: 'Music Composition and Sound', desc: 'Click the button below to continue with your registration' },
+      'outdoor-unit': { title: 'Outdoor Shooting Unit', desc: 'Click the button below to continue with your registration' },
+      'processing-lab': { title: 'Processing Lab Services', desc: 'Click the button below to continue with your registration' },
+      'producer': { title: 'Film Production Management', desc: 'Click the button below to continue with your registration' },
+      'publicity-designer': { title: 'Publicity Design and Graphics', desc: 'Click the button below to continue with your registration' },
+      'sets-locations': { title: 'Sets and Location Management', desc: 'Click the button below to continue with your registration' },
+      'sound-mixing': { title: 'Sound Recording and Mixing', desc: 'Click the button below to continue with your registration' },
+      'still': { title: 'Still Photography', desc: 'Click the button below to continue with your registration' },
+      'story': { title: 'Story and Screenplay Writing', desc: 'Click the button below to continue with your registration' },
+      'stunt-fight': { title: 'Stunt Coordination and Fight Choreography', desc: 'Click the button below to continue with your registration' },
+      'administrative': { title: 'Administrative Services', desc: 'Click the button below to continue with your registration' },
+      'art': { title: 'Art Direction and Design', desc: 'Click the button below to continue with your registration' },
+      'artists': { title: 'Acting and Performance', desc: 'Click the button below to continue with your registration' },
+      'choreographer': { title: 'Dance Choreography', desc: 'Click the button below to continue with your registration' },
+      'cinematographer': { title: 'Cinematography and Camera Work', desc: 'Click the button below to continue with your registration' },
+      'costume': { title: 'Costume Design and Wardrobe', desc: 'Click the button below to continue with your registration' },
+      'direction': { title: 'Film Direction and Creative Vision', desc: 'Click the button below to continue with your registration' }
+    };
+
+    // Add click event to all sidebar links
+    document.querySelectorAll('.sidebar .menu li a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        const url = this.href;
+        const departmentSlug = url.split('/').filter(s => s).pop();
+        const departmentName = this.textContent.trim();
+        
+        // Get department info
+        const info = departmentData[departmentSlug] || { 
+          title: 'Film direction and creative vision', 
+          desc: 'Click the button below to continue with your registration' 
+        };
+        
+        // Update the selected craft section
+        document.getElementById('selectedDepartmentName').textContent = departmentName;
+        document.getElementById('selectedDepartmentTitle').textContent = info.title;
+        document.getElementById('selectedDepartmentDesc').textContent = info.desc;
+        document.getElementById('proceedToFormBtn').href = url;
+        
+        // Show the section and scroll to it
+        const section = document.getElementById('selectedCraftSection');
+        section.style.display = 'block';
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Highlight active menu item
+        document.querySelectorAll('.sidebar .menu li').forEach(li => li.classList.remove('active'));
+        this.parentElement.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

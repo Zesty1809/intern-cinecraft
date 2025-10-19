@@ -1,0 +1,25 @@
+# Quick Run Steps (Django)
+
+## Linux / macOS
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser  # create admin login
+python manage.py collectstatic --noinput  # optional; needed if serving static via files
+python manage.py runserver
+
+## Windows (PowerShell)
+python -m venv venv
+./venv/Scripts/Activate.ps1
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser  # create admin login
+python manage.py collectstatic --noinput  # optional; needed if serving static via files
+python manage.py runserver
+
+Notes:
+- Admin panel: http://127.0.0.1:8000/admin/
+- App home:    http://127.0.0.1:8000/
+- If PowerShell blocks activation, run once (as Admin):
+	Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned

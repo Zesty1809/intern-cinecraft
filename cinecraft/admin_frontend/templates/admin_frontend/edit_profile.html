@@ -1,0 +1,478 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Edit Profile - {{ profile.full_name }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    /* Reset Django admin styles */
+    #content {
+        background: #f8fafc !important;
+    }
+    
+    * {
+        box-sizing: border-box;
+    }
+    
+    .edit-form-container {
+        max-width: 1000px;
+        margin: 24px auto;
+        padding: 24px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .edit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .edit-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    
+    .app-id-badge {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-section {
+        margin-bottom: 32px;
+    }
+    
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0f172a !important;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-grid.single {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-field {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-field.full-width {
+        grid-column: 1 / -1;
+    }
+    
+    .form-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151 !important;
+        margin-bottom: 6px;
+        display: block;
+    }
+    
+    .form-input,
+    .form-textarea,
+    .form-select {
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: #9ca3af;
+        opacity: 1;
+    }
+    
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+    
+    .form-input:disabled,
+    .form-textarea:disabled,
+    .form-select:disabled {
+        background: #f9fafb !important;
+        color: #6b7280 !important;
+        cursor: not-allowed;
+    }
+    
+    .form-textarea {
+        min-height: 100px;
+        resize: vertical;
+        font-family: inherit;
+        line-height: 1.5;
+    }
+    
+    /* Override any Django admin styles */
+    .form-field input[type="text"],
+    .form-field input[type="email"],
+    .form-field input[type="url"],
+    .form-field input[type="number"],
+    .form-field textarea,
+    .form-field select {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #d1d5db !important;
+    }
+    
+    /* Ensure select dropdowns are styled consistently */
+    .form-select option {
+        background: #ffffff;
+        color: #0f172a;
+        padding: 8px;
+    }
+    
+    /* Additional specificity for form elements */
+    .edit-form-container input,
+    .edit-form-container textarea,
+    .edit-form-container select {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+    }
+    
+    .edit-form-container label {
+        color: #374151 !important;
+    }
+    
+    /* Ensure all text in container is readable */
+    .edit-form-container,
+    .edit-form-container * {
+        color: inherit;
+    }
+    
+    .edit-form-container p {
+        color: #64748b !important;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 2px solid #e5e7eb;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary {
+        background: #0f766e;
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(15, 118, 110, 0.25);
+    }
+    
+    .btn-primary:hover {
+        background: #115e59;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(15, 118, 110, 0.35);
+    }
+    
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+    
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-pending {
+        background: #fff7ed;
+        color: #92400e;
+        border: 1px solid #fcd34d;
+    }
+    
+    .status-approved {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #34d399;
+    }
+    
+    .status-rejected {
+        background: #fff1f2;
+        color: #7f1d1d;
+        border: 1px solid #fca5a5;
+    }
+    
+    .status-inactive {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+    
+    .messages {
+        margin-bottom: 20px;
+    }
+    
+    .message {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .message.success {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #34d399;
+    }
+    
+    .message.error {
+        background: #fff1f2;
+        color: #7f1d1d;
+        border: 1px solid #fca5a5;
+    }
+    
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .edit-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-form-container">
+    <div class="edit-header">
+        <div>
+            <h1 class="edit-title">Edit Profile</h1>
+            <p style="color: #64748b; margin-top: 4px;">Update profile information for {{ profile.full_name }}</p>
+        </div>
+        <div class="app-id-badge">{{ profile.application_id }}</div>
+    </div>
+    
+    {% if error_message %}
+    <div class="messages">
+        <div class="message error">{{ error_message }}</div>
+    </div>
+    {% endif %}
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <form method="post" action="">
+        {% csrf_token %}
+        
+        <!-- Personal Information -->
+        <div class="form-section">
+            <h2 class="section-title">Personal Information</h2>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="full_name" class="form-input" value="{{ profile.full_name }}" required>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" class="form-input" value="{{ profile.email }}" required>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Phone Number *</label>
+                    <input type="text" name="phone_number" class="form-input" value="{{ profile.phone_number }}" required>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Department *</label>
+                    <input type="text" name="department_name" class="form-input" value="{{ profile.department_name }}" required>
+                </div>
+                
+                <div class="form-field full-width">
+                    <label class="form-label">Address *</label>
+                    <textarea name="address" class="form-textarea" rows="3" required>{{ profile.address }}</textarea>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">City *</label>
+                    <input type="text" name="city" class="form-input" value="{{ profile.city }}" required>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">State *</label>
+                    <input type="text" name="state" class="form-input" value="{{ profile.state }}" required>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Pin Code *</label>
+                    <input type="text" name="pin_code" class="form-input" value="{{ profile.pin_code }}" required>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Professional Information -->
+        <div class="form-section">
+            <h2 class="section-title">Professional Information</h2>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Years of Experience</label>
+                    <input type="number" name="years_of_experience" class="form-input" value="{{ profile.years_of_experience|default:'' }}" min="0">
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Availability</label>
+                    <input type="text" name="availability" class="form-input" value="{{ profile.availability }}">
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Expected Salary Range</label>
+                    <input type="text" name="expected_salary_range" class="form-input" value="{{ profile.expected_salary_range }}">
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Work Location</label>
+                    <input type="text" name="performed_work_location" class="form-input" value="{{ profile.performed_work_location }}">
+                </div>
+                
+                <div class="form-field full-width">
+                    <label class="form-label">Key Skills</label>
+                    <textarea name="key_skills" class="form-textarea">{{ profile.key_skills }}</textarea>
+                </div>
+                
+                <div class="form-field full-width">
+                    <label class="form-label">Previous Projects</label>
+                    <textarea name="previous_projects" class="form-textarea">{{ profile.previous_projects }}</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Education & Recognition -->
+        <div class="form-section">
+            <h2 class="section-title">Education & Recognition</h2>
+            <div class="form-grid single">
+                <div class="form-field">
+                    <label class="form-label">Educational Qualification</label>
+                    <textarea name="educational_qualification" class="form-textarea">{{ profile.educational_qualification }}</textarea>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Certifications & Training</label>
+                    <textarea name="certifications_training" class="form-textarea">{{ profile.certifications_training }}</textarea>
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">Awards & Recognition</label>
+                    <textarea name="awards_recognition" class="form-textarea">{{ profile.awards_recognition }}</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Portfolio & Links -->
+        <div class="form-section">
+            <h2 class="section-title">Portfolio & Links</h2>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Portfolio Link</label>
+                    <input type="url" name="portfolio_link" class="form-input" value="{{ profile.portfolio_link }}">
+                </div>
+                
+                <div class="form-field">
+                    <label class="form-label">LinkedIn Profile</label>
+                    <input type="url" name="linkedin_profile" class="form-input" value="{{ profile.linkedin_profile }}">
+                </div>
+                
+                <div class="form-field full-width">
+                    <label class="form-label">IMDb Profile</label>
+                    <input type="url" name="imdb_profile" class="form-input" value="{{ profile.imdb_profile }}">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional Information -->
+        <div class="form-section">
+            <h2 class="section-title">Additional Information</h2>
+            <div class="form-grid single">
+                <div class="form-field">
+                    <label class="form-label">Additional Notes</label>
+                    <textarea name="additional_information" class="form-textarea" rows="4">{{ profile.additional_information }}</textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Approval Status -->
+        <div class="form-section">
+            <h2 class="section-title">Approval Status</h2>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label class="form-label">Current Status</label>
+                    <select name="approval_status" class="form-select">
+                        {% for value, label in approval_choices %}
+                        <option value="{{ value }}" {% if profile.approval_status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <a href="{% url 'admin:index' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

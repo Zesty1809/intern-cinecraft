@@ -1,0 +1,59 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Dashboard | {{ site_title|default:_("Django site admin") }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'admin_frontend/css/main.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <header class="dashboard-header">
+        <h1 class="dashboard-title">{{ site_header|default:_("Administration") }}</h1>
+        <p class="dashboard-subtitle">Welcome back, {{ request.user.get_short_name|default:request.user.get_username }}</p>
+    </header>
+
+    <section class="dashboard-widgets">
+        <div class="widget">
+            <h2>Total Users</h2>
+            <p>{{ user_count }}</p>
+        </div>
+        <div class="widget">
+            <h2>Pending Tasks</h2>
+            <p>{{ pending_tasks }}</p>
+        </div>
+        <div class="widget">
+            <h2>Recent Activity</h2>
+            <p>{{ recent_activity }}</p>
+        </div>
+    </section>
+
+    <section class="dashboard-table">
+        <h2>Latest Records</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Object</th>
+                    <th>Owner</th>
+                    <th>Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in recent_entries %}
+                <tr>
+                    <td>{{ entry.object_repr }}</td>
+                    <td>{{ entry.user.get_username }}</td>
+                    <td>{{ entry.action_time|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No recent activity.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+{% block title %}Logged Out{% endblock %}
+{% block content %}
+<div class="logout-success" style="text-align:center; margin-top:80px;">
+  <h2>You have been logged out successfully.</h2>
+  <p>Thank you for using the admin dashboard.</p>
+  <a href="/admin/login/" class="btn">Login Again</a>
+</div>
+{% endblock %}

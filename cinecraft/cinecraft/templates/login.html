@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% load static %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cinecraft — Login</title>
+
+    <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="{% static 'css/login.css' %}" />
+  </head>
+
+  <body data-page="login">
+    <main class="auth-wrapper">
+      <section class="auth-card">
+        <h2 class="auth-title">Login</h2>
+        <p class="auth-subtitle">Welcome back to <strong>Cinecraft</strong>.</p>
+
+        <form method="POST" action="{% url 'login' %}">
+          {% csrf_token %}
+
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" placeholder="Email" required />
+          </div>
+
+          <div class="form-row">
+            <label for="password">Password</label>
+            <input id="password" type="password" name="password" placeholder="Password" required />
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="button">Login</button>
+          </div>
+        </form>
+
+
+        <p class="auth-subtitle" style="margin-top:16px;">
+          New here? <a class="muted-link" href="{% url 'register' %}">Register</a>
+        </p>
+
+
+        <div class="admin-login-divider">
+          <div class="divider-line"></div>
+          <a href="/admin/login/" class="button block admin-login-btn">Admin Login</a>
+        </div>
+
+        <div class="message-area">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="message show {% if message.tags %}{{ message.tags }}{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </section>
+    </main>
+
+    <script src="{% static 'js/script.js' %}"></script>
+  </body>
+</html>

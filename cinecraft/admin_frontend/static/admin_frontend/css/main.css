@@ -1,0 +1,5 @@
+/* simple layout */
+.af-dashboard{display:flex;gap:20px;padding:20px}
+.af-sidebar{width:220px;background:#1f2937;color:#fff;padding:16px;border-radius:8px}
+.af-main{flex:1}
+.card{background:#fff;padding:12px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:12px}

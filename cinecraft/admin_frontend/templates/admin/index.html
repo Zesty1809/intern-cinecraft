@@ -1,0 +1,208 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block title %}{{ site_title }} — Overview{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'admin_frontend/css/overview.css' %}">
+
+<header class="af-topbar">
+  <div class="af-brand">
+    <div class="af-brand-title">24 Cine Crafts</div>
+    <div class="af-brand-sub">Admin Dashboard</div>
+  </div>
+  <div class="af-user">
+    <div class="af-user-name">{{ request.user.get_short_name|default:request.user.username }}</div>
+    <div class="af-user-role">Administrator</div>
+  <a class="af-logout" href="{% url 'admin_frontend:custom_admin_logout' %}">Log out</a>
+  </div>
+</header>
+
+<nav class="af-tabs" role="navigation">
+  <button class="tab active" data-target="tab-overview">Overview</button>
+  <button class="tab" data-target="tab-submission">Submission</button>
+  <button class="tab" data-target="tab-departments">Departments</button>
+  <button class="tab" data-target="tab-users">Users</button>
+</nav>
+
+<main class="af-container">
+  <input type="hidden" id="csrf-token" value="{{ csrf_token_value }}">
+  <div id="af-toast" class="af-toast" role="status" aria-live="polite"></div>
+
+  <!-- Overview -->
+  <section id="tab-overview" class="af-section active">
+    <section class="af-stats">
+      <div class="stat-card">
+        <div class="stat-label">Total Submission</div>
+        <div class="stat-value" data-stat="total">{{ stats.total_submissions }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Review</div>
+        <div class="stat-value" data-stat="pending">{{ stats.pending_review }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value" data-stat="approved">{{ stats.approved }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Users</div>
+        <div class="stat-value">{{ stats.active_users }}</div>
+      </div>
+    </section>
+
+    <section class="af-recent">
+      <h3 class="section-title">Recent Submissions</h3>
+      <ul class="recent-list">
+        {% for it in recent_items %}
+          <li class="recent-item">
+            <div class="ri-left">
+              <div class="avatar">{{ it.name|slice:":1"|upper }}</div>
+            </div>
+            <div class="ri-mid">
+              <div class="ri-name">{{ it.name }}</div>
+              {% if it.department %}<div class="ri-dept">{{ it.department }}</div>{% endif %}
+            </div>
+            <div class="ri-right">
+              {% if it.date %}<div class="ri-date">{{ it.date|date:"Y-m-d" }}</div>{% endif %}
+              {% if it.experience %}<div class="ri-exp">{{ it.experience }} years exp.</div>{% endif %}
+              {% if it.status %}
+                <div class="ri-status {{ it.status_key }}">{{ it.status }}</div>
+              {% endif %}
+            </div>
+          </li>
+        {% empty %}
+          <li class="recent-empty">No recent submissions</li>
+        {% endfor %}
+      </ul>
+    </section>
+  </section>
+
+  <!-- Submission Tab -->
+  <section id="tab-submission" class="af-section">
+    {% if submissions_by_department %}
+      {% for department, submissions in submissions_by_department %}
+      <div class="department-submission-section">
+        <h3 class="dept-section-title">{{ department }}</h3>
+        <p class="dept-section-subtitle">Manage and review professional profile submissions</p>
+        
+        <div class="table-wrap">
+          <table class="submissions-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Join Date</th>
+                <th>Experience</th>
+                <th>Status</th>
+                <th>Craft</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in submissions %}
+                <tr data-pk="{{ s.obj_pk }}" data-status-key="{{ s.status_key }}" data-name="{{ s.name }}" data-role="{{ s.craft }}" data-contact="{{ s.contact }}">
+                  <td class="td-name">{{ s.name }}</td>
+                  <td class="td-contact">{{ s.contact }}</td>
+                  <td class="td-date">{% if s.join_date %}{{ s.join_date|date:"d-m-Y" }}{% endif %}</td>
+                  <td class="td-experience">{% if s.experience %}{{ s.experience }} Years{% endif %}</td>
+                  <td class="td-status">
+                    <span class="status-pill {{ s.status_key }}">{{ s.status_label }}</span>
+                  </td>
+                  <td class="td-craft">{{ s.craft }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Action Buttons Section -->
+        <div class="action-buttons-section">
+          <p class="action-instructions">Select a row above to perform actions:</p>
+          <div class="action-buttons">
+            <button type="button" class="action-btn edit-btn" disabled>Edit</button>
+            <button type="button" class="action-btn approve-btn" disabled>Approve</button>
+            <button type="button" class="action-btn reject-btn" disabled>Reject</button>
+            <button type="button" class="action-btn deactivate-btn" disabled>Deactivate</button>
+            <button type="button" class="action-btn activate-btn" disabled>Activate</button>
+            <button type="button" class="action-btn delete-btn" disabled>Delete</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="table-wrap">
+        <p style="text-align: center; padding: 40px; color: #64748b;">No submissions available</p>
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- Departments Tab -->
+  <section id="tab-departments" class="af-section">
+    <div class="panel-wrap dept-panel">
+      <div class="panel-header">
+        <h3 class="section-title">Department Management</h3>
+        <p class="section-subtitle">Add, edit, or remove cinema craft departments</p>
+      </div>
+      <div class="departments-grid">
+      {% for d in departments_list %}
+        <div class="dept-card">
+          <div class="dept-header">
+            <div>
+              <div class="dept-title">{{ d.title }}</div>
+              {% if d.subtitle %}<div class="dept-sub">{{ d.subtitle }}</div>{% endif %}
+            </div>
+            <span class="dept-badge">{{ d.status }}</span>
+          </div>
+          <div class="dept-actions">
+            <button class="dept-btn dept-edit">Edit</button>
+            <button class="dept-btn dept-deactivate">Deactivate</button>
+            <button class="dept-btn dept-delete">Delete</button>
+          </div>
+        </div>
+      {% empty %}
+        <div class="dept-empty">No departments</div>
+      {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Users Tab -->
+  <section id="tab-users" class="af-section">
+    <h3 class="section-title">Active Users</h3>
+    <div class="users-grid active-users">
+      {% for u in users_active_list %}
+        <div class="user-card" data-pk="{{ u.obj_pk }}" data-status-key="{{ u.status_key }}">
+          <div class="user-name">{{ u.name|default:"Unknown" }}</div>
+          {% if u.role %}<div class="user-role">{{ u.role }}</div>{% endif %}
+          {% if u.experience %}<div class="user-exp">{{ u.experience }} years experience</div>{% endif %}
+          {% if u.email %}<div class="user-meta">{{ u.email }}</div>{% endif %}
+          <div class="user-status {{ u.status_key }}">{{ u.status }}</div>
+          <div class="user-actions">
+            <button class="user-btn user-deactivate" data-action="deactivate">Deactivate</button>
+          </div>
+        </div>
+      {% empty %}
+        <div class="user-empty">No active users</div>
+      {% endfor %}
+    </div>
+
+    <h3 class="section-title" style="margin-top:20px">Inactive Users</h3>
+    <div class="users-grid inactive-users">
+      {% for u in users_inactive_list %}
+        <div class="user-card" data-pk="{{ u.obj_pk }}" data-status-key="{{ u.status_key }}">
+          <div class="user-name">{{ u.name|default:"Unknown" }}</div>
+          {% if u.role %}<div class="user-role">{{ u.role }}</div>{% endif %}
+          {% if u.experience %}<div class="user-exp">{{ u.experience }} years experience</div>{% endif %}
+          {% if u.email %}<div class="user-meta">{{ u.email }}</div>{% endif %}
+          <div class="user-status {{ u.status_key }}">{{ u.status }}</div>
+          <div class="user-actions">
+            <button class="user-btn user-activate" data-action="activate">Activate</button>
+          </div>
+        </div>
+      {% empty %}
+        <div class="user-empty">No inactive users</div>
+      {% endfor %}
+    </div>
+  </section>
+</main>
+
+<script src="{% static 'admin_frontend/js/overview.js' %}"></script>
+{% endblock %}

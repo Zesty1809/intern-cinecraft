@@ -1,0 +1,191 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Profile Updated Successfully{% endblock %}
+
+{% block extrastyle %}
+<style>
+    /* Reset Django admin styles */
+    #content {
+        background: #f8fafc !important;
+    }
+    
+    .success-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 40px;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .success-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 24px;
+        background: #ecfdf5;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: #059669;
+    }
+    
+    .success-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0f172a !important;
+        margin-bottom: 12px;
+    }
+    
+    .success-message {
+        font-size: 16px;
+        color: #64748b !important;
+        margin-bottom: 32px;
+        line-height: 1.6;
+    }
+    
+    .profile-info {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 32px;
+        text-align: left;
+    }
+    
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #475569 !important;
+    }
+    
+    .info-value {
+        color: #0f172a !important;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+    
+    .btn {
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary {
+        background: #0f766e;
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(15, 118, 110, 0.25);
+    }
+    
+    .btn-primary:hover {
+        background: #115e59;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(15, 118, 110, 0.35);
+    }
+    
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+    
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-approved {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #34d399;
+    }
+    
+    .status-pending {
+        background: #fff7ed;
+        color: #92400e;
+        border: 1px solid #fcd34d;
+    }
+    
+    .status-rejected {
+        background: #fff1f2;
+        color: #7f1d1d;
+        border: 1px solid #fca5a5;
+    }
+    
+    .status-inactive {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-icon">✓</div>
+    <h1 class="success-title">Profile Updated Successfully!</h1>
+    <p class="success-message">{{ success_message }}</p>
+    
+    <div class="profile-info">
+        <div class="info-row">
+            <span class="info-label">Application ID:</span>
+            <span class="info-value">{{ profile.application_id }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Full Name:</span>
+            <span class="info-value">{{ profile.full_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Department:</span>
+            <span class="info-value">{{ profile.department_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Email:</span>
+            <span class="info-value">{{ profile.email }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Status:</span>
+            <span class="info-value">
+                <span class="status-badge status-{{ profile.approval_status }}">
+                    {{ profile.get_approval_status_display }}
+                </span>
+            </span>
+        </div>
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{% url 'admin:index' %}" class="btn btn-primary">Back to Dashboard</a>
+        <a href="{% url 'admin_frontend:submission_edit' profile.pk %}" class="btn btn-secondary">Edit Again</a>
+    </div>
+</div>
+{% endblock %}

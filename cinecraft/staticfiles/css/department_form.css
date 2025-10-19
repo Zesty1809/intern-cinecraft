@@ -1,0 +1,434 @@
+body {
+    background: #fff;
+    font-family: 'Poppins', sans-serif;
+    color: #222;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* --- Flash Messages (Popup Toast) --- */
+.flash-region { 
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 420px;
+}
+
+.flash { 
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white; 
+    border: none;
+    padding: 18px 24px; 
+    border-radius: 12px;
+    font-size: 15px; 
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3), 0 4px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    animation: slideInRight 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    min-width: 320px;
+}
+
+.flash::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    animation: shrink 4s linear forwards;
+}
+
+.flash::before {
+    content: '✓';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 18px;
+    flex-shrink: 0;
+    backdrop-filter: blur(5px);
+}
+
+.flash.error { 
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3), 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.flash.error::before {
+    content: '✕';
+}
+
+.flash.warning { 
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3), 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.flash.warning::before {
+    content: '⚠';
+    font-size: 20px;
+}
+
+.flash.info { 
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3), 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.flash.info::before {
+    content: 'ℹ';
+    font-size: 20px;
+}
+
+.flash-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.8;
+    transition: all 0.2s;
+}
+
+.flash-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(400px) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes shrink {
+    from {
+        width: 4px;
+    }
+    to {
+        width: 0;
+    }
+}
+
+/* Auto-hide animation */
+.flash.fade-out {
+    animation: fadeOutRight 0.4s ease-out forwards;
+}
+
+@keyframes fadeOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(400px) scale(0.8);
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .flash-region {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+    }
+    
+    .flash {
+        min-width: auto;
+    }
+}
+
+/* --- Header --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #c4bfbf;
+    padding: 20px;
+}
+
+.header-left h2 {
+    margin: 0;
+    font-weight: 700;
+}
+
+.header-left p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.dept-btn {
+    background: #6e6464;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 8px 20px;
+    font-weight: 500;
+    cursor: default;
+}
+
+/* --- Form Sections --- */
+.section {
+    background: #b9b5b5;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 8px;
+}
+
+.section h3 {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 8px;
+    margin: 6px 0;
+    border-radius: 6px;
+    border: none;
+    box-sizing: border-box;
+}
+
+/* --- Buttons --- */
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 20px;
+}
+
+button {
+    background: #6e6464;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+button.cancel {
+    background: #a39d9d;
+}
+/* === Additional Information Section === */
+.section h3 {
+    margin-bottom: 10px;
+}
+
+/* Style for the text area (Additional Info box) */
+textarea[name="additional_information"] {
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #b0aaaa;
+    font-size: 15px;
+    background: #f9f9f9;
+    color: #222;
+    transition: all 0.3s ease;
+}
+
+/* Add hover & focus effect for better UX */
+textarea[name="additional_information"]:focus {
+    background: #fff;
+    border-color: #6e6464;
+    box-shadow: 0 0 4px rgba(110, 100, 100, 0.4);
+    outline: none;
+}
+
+/* --- Back to Dashboard Button --- */
+.back-to-dashboard-btn {
+    background: #6b6b6b;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-right: 12px;
+}
+
+.back-to-dashboard-btn:hover {
+    background: #7a7a7a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Confirmation Modal --- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-content {
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 500px;
+    width: 90%;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content h3 {
+    margin: 0 0 16px 0;
+    color: #222;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.modal-content p {
+    margin: 0 0 24px 0;
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.modal-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-btn-discard {
+    background: #ef4444;
+    color: white;
+}
+
+.modal-btn-discard:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.modal-btn-draft {
+    background: #10b981;
+    color: white;
+}
+
+.modal-btn-draft:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.modal-btn-cancel {
+    background: #6b6b6b;
+    color: white;
+}
+
+.modal-btn-cancel:hover {
+    background: #7a7a7a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107, 107, 107, 0.3);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .modal-content {
+        padding: 24px;
+    }
+    
+    .modal-buttons {
+        flex-direction: column;
+    }
+    
+    .modal-btn {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .back-to-dashboard-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+        margin-right: 8px;
+    }
+}

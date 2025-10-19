@@ -1,0 +1,188 @@
+/* Admin login divider and alignment */
+.admin-login-divider {
+  margin: 32px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+}
+.divider-line {
+  border-top: 1px solid rgba(148,163,184,0.18);
+  width: 100%;
+}
+.admin-login-btn {
+  background: #232b3a;
+  color: #e6edf5;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Notification message area alignment */
+.message-area {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+/* ---------- login.css (final minimal) ---------- */
+@import url('global.css');
+
+/* Layout */
+.auth-wrapper {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(34,211,238,.06), transparent 60%),
+              radial-gradient(900px 500px at 110% 20%, rgba(99,102,241,.05), transparent 60%);
+}
+
+/* Card */
+.auth-card {
+  width: min(520px, 92%);
+  background: rgba(15, 27, 45, 0.92);
+  -webkit-backdrop-filter: saturate(140%) blur(6px);
+  backdrop-filter: saturate(140%) blur(6px);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: var(--radius, 16px);
+  padding: 28px 26px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
+
+/* Text */
+.auth-title {
+  margin: 0 0 8px;
+  line-height: 1.2;
+  color: var(--title, #e5e7eb);
+  letter-spacing: .2px;
+}
+
+.auth-subtitle {
+  margin: 0 0 22px;
+  color: var(--muted, #9aa4b2);
+  font-size: 15px;
+}
+
+/* Form */
+.form-row {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+label {
+  font-size: 14px;
+  color: var(--muted, #9aa4b2);
+}
+
+/* Inputs */
+input[type="email"],
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  background: #0b1220;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: var(--text, #e5e7eb);
+  border-radius: 12px;
+  padding: 13px 14px;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+input::placeholder { color: #7c8899; opacity: .9; }
+input:hover { border-color: rgba(148,163,184,.4); }
+input:focus {
+  border-color: var(--accent, #22d3ee);
+  box-shadow: 0 0 0 2px rgba(34,211,238,.15);
+  background-color: #0d1628;
+}
+
+/* Actions */
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* Button: simple and consistent */
+.button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  min-height: 40px;
+  border: 1px solid rgba(148,163,184,.35);
+  border-radius: 12px;
+  background: #111a2a;
+  color: #e6edf5;
+  font-weight: 600;
+  letter-spacing: .1px;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease, transform .06s ease;
+}
+
+.button:hover {
+  background: #132033;
+  border-color: rgba(148,163,184,.5);
+}
+
+.button:active {
+  background: #101a2b;
+  transform: translateY(1px);
+}
+
+.button:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+.button.block { width: 100%; }
+
+/* Links */
+.muted-link {
+  color: var(--muted, #9aa4b2);
+  text-decoration: none;
+  font-size: 14px;
+}
+.muted-link:hover {
+  color: var(--text, #e5e7eb);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Messages */
+.message {
+  margin: 14px 0 0;
+  padding: 11px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.35;
+  display: none;
+}
+.message.show { display: block; }
+.message.error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #fecaca;
+}
+.message.success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #bbf7d0;
+}
+
+/* Small screen tweaks */
+@media (max-width: 380px) {
+  .auth-card { padding: 22px 18px; }
+  .form-actions { flex-direction: column; align-items: stretch; }
+  .button { width: 100%; text-align: center; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

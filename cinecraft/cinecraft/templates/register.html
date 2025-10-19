@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cinecraft — Sign up</title>
+
+  <link rel="icon" href="{% static 'assets/favicon.svg' %}" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="{% static 'css/register.css' %}" />
+</head>
+<body data-page="signup">
+  <main class="auth-wrapper">
+    <section class="auth-card">
+      <h2 class="auth-title">Create your account</h2>
+      <p class="auth-subtitle">Join <strong>Cinecraft</strong> in seconds.</p>
+
+      <form method="POST" action="{% url 'register' %}">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <label for="username">Username</label>
+          <input id="username" type="text" name="username" placeholder="Username" required />
+        </div>
+
+        <div class="form-row">
+          <label for="email">Email</label>
+          <input id="email" type="email" name="email" placeholder="Email" required />
+        </div>
+
+        <div class="form-row">
+          <label for="password">Password</label>
+          <input id="password" type="password" name="password" placeholder="Password" required />
+        </div>
+
+        <div class="form-row">
+          <label for="confirm_password">Confirm Password</label>
+          <input id="confirm_password" type="password" name="confirm_password" placeholder="Confirm Password" required />
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="button">Register</button>
+        </div>
+      </form>
+
+      <p class="auth-subtitle" style="margin-top:16px;">
+        Already have an account?
+        <a class="muted-link" href="{% url 'login' %}">Login</a>
+      </p>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="message show {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>
