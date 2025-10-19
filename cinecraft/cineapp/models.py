@@ -79,22 +79,46 @@ class DepartmentProfile(models.Model):
         return f"{self.full_name} - {self.department_name}"
 
 
-class OTPCode(models.Model):
-    """One-time passcodes for two-step login verification."""
-    user = models.ForeignKey(
+class TOTPDevice(models.Model):
+    """Stores a per-user TOTP secret and counters for rate-limiting/attempts."""
+    user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='otp_codes'
+        related_name='totp_device'
     )
-    code = models.CharField(max_length=8)
+    secret = models.CharField(max_length=64)
     created_at = models.DateTimeField(auto_now_add=True)
-    used = models.BooleanField(default=False)
 
-    def is_valid(self, expiry_minutes=10):
-        if self.used:
-            return False
-        return (timezone.now() - self.created_at).total_seconds() < expiry_minutes * 60
+    # rate-limiting and attempt counters
+    last_sent_at = models.DateTimeField(null=True, blank=True)
+    send_count_hour = models.PositiveIntegerField(default=0)
+    last_send_count_reset = models.DateTimeField(null=True, blank=True)
 
-    def mark_used(self):
-        self.used = True
-        self.save()
+    failed_attempts = models.PositiveIntegerField(default=0)
+    locked_until = models.DateTimeField(null=True, blank=True)
+
+    def reset_send_counts(self):
+        self.send_count_hour = 0
+        self.last_send_count_reset = timezone.now()
+        self.save(update_fields=['send_count_hour', 'last_send_count_reset'])
+
+    def increment_send(self):
+        now = timezone.now()
+        if not self.last_send_count_reset or (now - self.last_send_count_reset).total_seconds() > 3600:
+            self.send_count_hour = 1
+            self.last_send_count_reset = now
+        else:
+            self.send_count_hour += 1
+        self.last_sent_at = now
+        self.save(update_fields=['send_count_hour', 'last_sent_at', 'last_send_count_reset'])
+
+    def record_failed_attempt(self, lock_after=5, lock_minutes=15):
+        self.failed_attempts += 1
+        if self.failed_attempts >= lock_after:
+            self.locked_until = timezone.now() + timezone.timedelta(minutes=lock_minutes)
+        self.save(update_fields=['failed_attempts', 'locked_until'])
+
+    def reset_attempts(self):
+        self.failed_attempts = 0
+        self.locked_until = None
+        self.save(update_fields=['failed_attempts', 'locked_until'])

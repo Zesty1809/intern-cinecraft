@@ -1,6 +1,7 @@
 import random
 import string
 
+import pyotp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -8,9 +9,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 
 from .forms import DepartmentProfileForm
-from .models import DepartmentProfile, OTPCode
+from .models import DepartmentProfile, TOTPDevice
 
 
 # Register
@@ -103,8 +105,24 @@ def request_otp_view(request):
             messages.error(request, "Your account has been deactivated.")
             return redirect('login')
 
-        code = _generate_otp()
-        OTPCode.objects.create(user=user, code=code)
+        # ensure user has a TOTPDevice
+        device, created = TOTPDevice.objects.get_or_create(user=user, defaults={
+            'secret': pyotp.random_base32()
+        })
+
+        # rate-limit: allow max 6 sends per hour
+        now = timezone.now()
+        if device.last_send_count_reset and (now - device.last_send_count_reset).total_seconds() > 3600:
+            device.reset_send_counts()
+
+        if device.send_count_hour >= 6:
+            messages.error(request, "Too many OTP requests. Please try again later.")
+            return redirect('login')
+
+        device.increment_send()
+
+        totp = pyotp.TOTP(device.secret)
+        code = totp.now()
 
         # send email with OTP
         try:
@@ -138,13 +156,24 @@ def verify_otp_view(request):
             messages.error(request, "Invalid session. Please request a new code.")
             return redirect('login')
 
-        otp = OTPCode.objects.filter(user=user, code=code, used=False).order_by('-created_at').first()
-        if not otp or not otp.is_valid():
+        # check TOTP and record failed attempts if necessary
+        device = getattr(user, 'totp_device', None)
+        if not device:
+            messages.error(request, "No OTP device found for this account. Request a new code.")
+            return redirect('login')
+
+        if device.locked_until and device.locked_until > timezone.now():
+            messages.error(request, "Account temporarily locked due to repeated failed attempts. Try later.")
+            return redirect('login')
+
+        totp = pyotp.TOTP(device.secret)
+        if not totp.verify(code, valid_window=1):
+            device.record_failed_attempt()
             messages.error(request, "Invalid or expired code.")
             return redirect('verify_otp')
 
-        # mark used and log in user
-        otp.mark_used()
+        # success - reset counters and log in
+        device.reset_attempts()
         login(request, user)
         request.session.pop('otp_user_id', None)
         messages.success(request, "Logged in successfully.")
