@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.apps import apps
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -6,6 +8,66 @@ from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_POST
+
+
+@staff_member_required
+def admin_overview(request):
+    """
+    Renders the custom admin dashboard (overview.html) with:
+    - recent_items: newest submissions globally (Overview tab)
+    - submissions_by_department: grouped, each department recent-first (Submission tab)
+    """
+    DepartmentProfile = apps.get_model("cineapp", "DepartmentProfile")
+    if DepartmentProfile is None:
+        return render(request, "admin_frontend/overview.html", {
+            "recent_items": [],
+            "submissions_by_department": [],
+            "stats": {"total_submissions": 0, "pending_review": 0, "approved": 0, "active_users": 0},
+            "site_title": "Overview",
+        })
+
+    # Choose a reliable ordering field
+    order_field = "-created_at" if hasattr(DepartmentProfile, "created_at") else "-id"
+
+    # Base queryset: newest first
+    qs = DepartmentProfile.objects.all().order_by(order_field)
+
+    # Stats (adjust if you already compute elsewhere)
+    stats = {
+        "total_submissions": qs.count(),
+        "pending_review": qs.filter(approval_status="pending").count(),
+        "approved": qs.filter(approval_status__in=["approved", "active"]).count(),
+        "active_users": qs.filter(approval_status__in=["approved", "active"]).count(),
+    }
+
+    # Overview tab: latest N global submissions
+    recent_items = qs[:10]
+
+    # Submission tab: group rows by department, each group recent-first
+    grouped = defaultdict(list)
+    for s in qs:
+        dept = getattr(s, "department_name", "Unknown")
+        grouped[dept].append({
+            "obj_pk": s.pk,
+            "status_key": getattr(s, "approval_status", "unknown") or "unknown",
+            "status_label": (getattr(s, "approval_status", "unknown") or "unknown").capitalize(),
+            "name": getattr(s, "full_name", "") or getattr(s, "name", ""),
+            "contact": getattr(s, "phone_number", "") or getattr(s, "email", ""),
+            "join_date": getattr(s, "created_at", None),
+            "experience": getattr(s, "years_of_experience", None),
+            "craft": getattr(s, "department_name", ""),
+        })
+
+    # Turn into list of (department, submissions) for template loop
+    submissions_by_department = list(grouped.items())
+
+    context = {
+        "recent_items": recent_items,
+        "submissions_by_department": submissions_by_department,
+        "stats": stats,
+        "site_title": "Overview",
+    }
+    return render(request, "admin_frontend/overview.html", context)
 
 
 @staff_member_required
@@ -113,9 +175,9 @@ def submission_edit(request, pk):
     DepartmentProfile = apps.get_model("cineapp", "DepartmentProfile")
     if DepartmentProfile is None:
         return JsonResponse({"ok": False, "error": "model not found"}, status=404)
-    
+
     profile = get_object_or_404(DepartmentProfile, pk=pk)
-    
+
     if request.method == 'POST':
         # Update profile fields from POST data using setattr to avoid type checking issues
         field_mappings = {
@@ -141,12 +203,12 @@ def submission_edit(request, pk):
             'additional_information': 'additional_information',
             'approval_status': 'approval_status',
         }
-        
+
         for post_field, model_field in field_mappings.items():
             value = request.POST.get(post_field)
             if value is not None:
                 setattr(profile, model_field, value)
-        
+
         # Handle years_of_experience separately (integer field)
         years_exp = request.POST.get('years_of_experience')
         if years_exp:
@@ -156,13 +218,13 @@ def submission_edit(request, pk):
                 setattr(profile, 'years_of_experience', None)
         else:
             setattr(profile, 'years_of_experience', None)
-        
+
         try:
             profile.save()
             # Get approval choices using getattr
             approval_choices = getattr(DepartmentProfile, 'APPROVAL_CHOICES', [])
             full_name = getattr(profile, 'full_name', 'User')
-            
+
             context = {
                 'profile': profile,
                 'site_title': 'Edit Profile',
@@ -179,7 +241,7 @@ def submission_edit(request, pk):
                 'error_message': f'Error updating profile: {str(e)}'
             }
             return render(request, 'admin_frontend/edit_profile.html', context)
-    
+
     # GET request - show form
     approval_choices = getattr(DepartmentProfile, 'APPROVAL_CHOICES', [])
     context = {
