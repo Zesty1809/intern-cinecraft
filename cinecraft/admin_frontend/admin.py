@@ -7,6 +7,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.auth import get_user_model
 from django.middleware.csrf import get_token
 
+
 DEFAULT_DEPARTMENTS = [
     {"title": "Direction Department", "subtitle": "Directors, Assistant Directors, Script Supervisors", "status": "Active"},
     {"title": "Cinematography", "subtitle": "DOPs, Camera Operators, Gaffers", "status": "Active"},
@@ -98,7 +99,7 @@ class CustomAdminSite(AdminSite):
                         approved_count += 1
 
                     department = getattr(s, 'department_name', None) or 'Unknown Department'
-                    
+
                     submission_data = {
                         'name': getattr(s, 'full_name', str(s)),
                         'contact': getattr(s, 'phone_number', ''),
@@ -111,9 +112,9 @@ class CustomAdminSite(AdminSite):
                         'obj_pk': getattr(s, 'pk', None),
                         'application_id': getattr(s, 'application_id', ''),
                     }
-                    
+
                     submissions_list.append(submission_data)
-                    
+
                     # Group by department
                     if department not in submissions_by_department:
                         submissions_by_department[department] = []
@@ -208,9 +209,23 @@ class CustomAdminSite(AdminSite):
         except Exception:
             traceback.print_exc()
 
-        # Sort departments alphabetically for display
-        sorted_departments = sorted(submissions_by_department.items(), key=lambda x: x[0])
-        
+        # Sort department sections by most recent submission in that department
+        def _group_latest_ts(group):
+            # group is (department_name, submissions_in_dept)
+            items = group[1]
+            latest = None
+            for it in items:
+                ts = it.get('join_date')  # created_at
+                if ts and (latest is None or ts > latest):
+                    latest = ts
+            return latest or 0
+
+        sorted_departments = sorted(
+            submissions_by_department.items(),
+            key=_group_latest_ts,
+            reverse=True
+        )
+
         extra = extra_context or {}
         extra.update({
             'stats': stats,
