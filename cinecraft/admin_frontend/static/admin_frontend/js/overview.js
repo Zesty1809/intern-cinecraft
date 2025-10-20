@@ -196,70 +196,124 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Row selection functionality
-  let selectedRow = null;
-  const allTables = document.querySelectorAll('.submissions-table');
-  
-  allTables.forEach(table => {
-    const tbody = table.querySelector('tbody');
-    if (!tbody) return;
-    
-    tbody.addEventListener('click', (event) => {
-      const target = event.target;
-      if (!(target instanceof HTMLElement)) return;
-      
-      // Check if clicked on a button - if so, don't select row
-      if (target.closest('button')) return;
-      
-      const row = target.closest('tr');
-      if (!row || !row.dataset.pk) return;
-      
-      // Toggle selection
-      if (selectedRow === row) {
-        row.classList.remove('selected');
-        selectedRow = null;
-        updateActionButtons(null);
-      } else {
-        // Remove previous selection
-        if (selectedRow) {
-          selectedRow.classList.remove('selected');
-        }
-        row.classList.add('selected');
-        selectedRow = row;
-        updateActionButtons(row);
-      }
-    });
-  });
-  
-  function updateActionButtons(row) {
-    const sections = document.querySelectorAll('.action-buttons-section');
-    sections.forEach(section => {
-      const editBtn = section.querySelector('.edit-btn');
-      const approveBtn = section.querySelector('.approve-btn');
-      const rejectBtn = section.querySelector('.reject-btn');
-      const deactivateBtn = section.querySelector('.deactivate-btn');
-      const activateBtn = section.querySelector('.activate-btn');
-      const deleteBtn = section.querySelector('.delete-btn');
-      
-      if (!row) {
-        if (editBtn) editBtn.disabled = true;
-        if (approveBtn) approveBtn.disabled = true;
-        if (rejectBtn) rejectBtn.disabled = true;
-        if (deactivateBtn) deactivateBtn.disabled = true;
-        if (activateBtn) activateBtn.disabled = true;
-        if (deleteBtn) deleteBtn.disabled = true;
-        return;
-      }
-      
-      const statusKey = row.dataset.statusKey;
-      if (editBtn) editBtn.disabled = false;
-      if (approveBtn) approveBtn.disabled = (statusKey === 'approved' || statusKey === 'active');
-      if (rejectBtn) rejectBtn.disabled = (statusKey === 'rejected');
-      if (deactivateBtn) deactivateBtn.disabled = (statusKey === 'inactive' || statusKey === 'pending' || statusKey === 'rejected');
-      if (activateBtn) activateBtn.disabled = (statusKey !== 'inactive');
-      if (deleteBtn) deleteBtn.disabled = false;
-    });
+  // Row selection + actions scoped per department section
+document.querySelectorAll('.department-submission-section').forEach(section => {
+  const table = section.querySelector('.submissions-table');
+  const tbody = table ? table.querySelector('tbody') : null;
+  const btnArea = section.querySelector('.action-buttons-section');
+  if (!tbody || !btnArea) return;
+
+  let selectedInSection = null;
+
+  const buttons = {
+    edit: btnArea.querySelector('.edit-btn'),
+    approve: btnArea.querySelector('.approve-btn'),
+    reject: btnArea.querySelector('.reject-btn'),
+    deactivate: btnArea.querySelector('.deactivate-btn'),
+    activate: btnArea.querySelector('.activate-btn'),
+    del: btnArea.querySelector('.delete-btn'),
+  };
+
+  const setButtons = (row) => {
+    const enable = !!row;
+    Object.values(buttons).forEach(b => b && (b.disabled = !enable));
+    if (!row) return;
+    const statusKey = row.dataset.statusKey || '';
+    if (buttons.approve) buttons.approve.disabled = (statusKey === 'approved' || statusKey === 'active');
+    if (buttons.reject) buttons.reject.disabled = (statusKey === 'rejected');
+    if (buttons.deactivate) buttons.deactivate.disabled = (statusKey === 'inactive' || statusKey === 'pending' || statusKey === 'rejected');
+    if (buttons.activate) buttons.activate.disabled = (statusKey !== 'inactive');
+  };
+
+  function markSelected(row, was) {
+    if (was) {
+      was.classList.remove('selected');
+      was.setAttribute('aria-selected', 'false');
+    }
+    row.classList.add('selected');
+    row.setAttribute('aria-selected', 'true');
   }
-  
+
+  // initial state
+  setButtons(null);
+
+  // select/deselect rows within this section only
+  tbody.addEventListener('click', (e) => {
+    const interactive = e.target.closest('button,a,[role="button"]');
+    if (interactive) return;
+
+    const row = e.target.closest('tr[data-pk]');
+    if (!row) return;
+
+    if (selectedInSection === row) {
+      row.classList.remove('selected');
+      row.setAttribute('aria-selected', 'false');
+      selectedInSection = null;
+      setButtons(null);
+    } else {
+      const prev = selectedInSection;
+      selectedInSection = row;
+      markSelected(row, prev);
+      setButtons(row);
+    }
+  });
+
+  // wire this section’s buttons to this section’s selected row
+  btnArea.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.action-btn');
+    if (!btn || btn.disabled) return;
+    if (!selectedInSection) return;
+
+    // delegate to your existing action functions
+    if (btn.classList.contains('edit-btn')) {
+      const pk = selectedInSection.dataset.pk;
+      if (pk) window.location.href = `/admin/front/submission/${pk}/edit/`;
+      return;
+    }
+    if (btn.classList.contains('approve-btn')) {
+      if (!confirm('Approve this submission?')) return;
+      await postAction(selectedInSection, 'approve');
+    } else if (btn.classList.contains('reject-btn')) {
+      if (!confirm('Reject this submission?')) return;
+      await postAction(selectedInSection, 'reject');
+    } else if (btn.classList.contains('deactivate-btn')) {
+      if (!confirm('Mark this user as inactive?')) return;
+      await postAction(selectedInSection, 'deactivate');
+      setRowStatus(selectedInSection, 'inactive');
+    } else if (btn.classList.contains('activate-btn')) {
+      if (!confirm('Mark this user as active?')) return;
+      await postAction(selectedInSection, 'activate');
+      setRowStatus(selectedInSection, 'active');
+    } else if (btn.classList.contains('delete-btn')) {
+      if (!confirm('Delete this submission permanently?')) return;
+      const pk = selectedInSection.dataset.pk;
+      const resp = await fetch(`/admin/front/submission/${pk}/delete/`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrftoken },
+      }).then(r => r.json());
+      if (resp?.ok) {
+        selectedInSection.remove();
+        selectedInSection = null;
+        updateStats();
+        setButtons(null);
+        showToast('Submission deleted', 'success');
+      } else {
+        showToast('Delete failed', 'error');
+      }
+      return;
+    }
+
+    // clear selection after action
+    if (selectedInSection) {
+      selectedInSection.classList.remove('selected');
+      selectedInSection = null;
+      setButtons(null);
+      updateStats();
+    }
+  });
+});
+
   // Handle action button clicks
   document.addEventListener('click', (event) => {
     const target = event.target;
