@@ -1,201 +1,244 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{{ department_name }} Profile Form</title>
-    <link rel="stylesheet" href="{% static 'css/department_form.css' %}?v=2.0">
-</head>
-<body>
-  <div class="container">
-
-    {% if messages %}
+    <link
+      rel="stylesheet"
+      href="{% static 'css/department_form.css' %}?v=2.0"
+    />
+  </head>
+  <body>
+    <div class="container">
+      {% if messages %}
       <div class="flash-region">
         {% for message in messages %}
-          <div class="flash {{ message.tags|default:'' }}">
-            {{ message }}
-            <button class="flash-close" onclick="this.parentElement.remove()">×</button>
-          </div>
+        <div class="flash {{ message.tags|default:'' }}">
+          {{ message }}
+          <button class="flash-close" onclick="this.parentElement.remove()">
+            ×
+          </button>
+        </div>
         {% endfor %}
       </div>
-    {% endif %}
-
-    <!-- Header Section -->
-    <div class="header">
-      <div class="header-left">
-        <h2>24 Cine Crafts</h2>
-        <p>Cinema Professional Platform</p>
-      </div>
-      <div class="header-right">
-        <button type="button" class="back-to-dashboard-btn" onclick="handleBackToDashboard()">← Back to Dashboard</button>
-        <button class="dept-btn">{{ department_name }} Department</button>
-      </div>
-    </div>
-
-    <!-- Form Section -->
-  <form method="post" enctype="multipart/form-data" action="" class="profile-form">
-      {% csrf_token %}
-
-      {% if form.errors %}
-        <div class="errors">{{ form.errors }}</div>
       {% endif %}
 
-      <div class="section">
-        <h3>Personal Information</h3>
-        {{ form.full_name.label_tag }} {{ form.full_name }}
-        {{ form.email.label_tag }} {{ form.email }}
-        {{ form.phone_number.label_tag }} {{ form.phone_number }}
-        {{ form.date_of_birth.label_tag }} {{ form.date_of_birth }}
-        {{ form.address.label_tag }} {{ form.address }}
-        {{ form.city.label_tag }} {{ form.city }}
-        {{ form.state.label_tag }} {{ form.state }}
-        {{ form.pin_code.label_tag }} {{ form.pin_code }}
+      <!-- Header Section -->
+      <div class="header">
+        <div class="header-left">
+          <h2>24 Cine Crafts</h2>
+          <p>Cinema Professional Platform</p>
+        </div>
+        <div class="header-right">
+          <button
+            type="button"
+            class="back-to-dashboard-btn"
+            onclick="handleBackToDashboard()"
+          >
+            ← Back to Dashboard
+          </button>
+          <button class="dept-btn">{{ department_name }} Department</button>
+        </div>
       </div>
 
-      <div class="section">
-        <h3>Professional Information</h3>
-        {{ form.years_of_experience.label_tag }} {{ form.years_of_experience }}
-        {{ form.key_skills.label_tag }} {{ form.key_skills }}
-        {{ form.previous_projects.label_tag }} {{ form.previous_projects }}
-        {{ form.availability.label_tag }} {{ form.availability }}
-        {{ form.expected_salary_range.label_tag }} {{ form.expected_salary_range }}
-        {{ form.performed_work_location.label_tag }} {{ form.performed_work_location }}
-      </div>
+      <!-- Form Section -->
+      <form
+        method="post"
+        enctype="multipart/form-data"
+        action=""
+        class="profile-form"
+      >
+        {% csrf_token %} {% if form.errors %}
+        <div class="errors">{{ form.errors }}</div>
+        {% endif %}
 
-      <div class="section">
-        <h3>Education & Certifications</h3>
-        {{ form.educational_qualification.label_tag }} {{ form.educational_qualification }}
-        {{ form.certifications_training.label_tag }} {{ form.certifications_training }}
-        {{ form.awards_recognition.label_tag }} {{ form.awards_recognition }}
-      </div>
+        <div class="section">
+          <h3>Personal Information</h3>
+          {{ form.full_name.label_tag }} {{ form.full_name }} {{
+          form.email.label_tag }} {{ form.email }} {{
+          form.phone_number.label_tag }} {{ form.phone_number }} {{
+          form.date_of_birth.label_tag }} {{ form.date_of_birth }} {{
+          form.address.label_tag }} {{ form.address }} {{ form.city.label_tag }}
+          {{ form.city }} {{ form.state.label_tag }} {{ form.state }} {{
+          form.pin_code.label_tag }} {{ form.pin_code }}
+        </div>
 
-      <div class="section">
-        <h3>Portfolio & Links</h3>
-        {{ form.portfolio_link.label_tag }} {{ form.portfolio_link }}
-        {{ form.linkedin_profile.label_tag }} {{ form.linkedin_profile }}
-        {{ form.imdb_profile.label_tag }} {{ form.imdb_profile }}
-      </div>
+        <div class="section">
+          <h3>Professional Information</h3>
+          {{ form.years_of_experience.label_tag }} {{ form.years_of_experience
+          }} {{ form.key_skills.label_tag }} {{ form.key_skills }} {{
+          form.previous_projects.label_tag }} {{ form.previous_projects }} {{
+          form.availability.label_tag }} {{ form.availability }} {{
+          form.expected_salary_range.label_tag }} {{ form.expected_salary_range
+          }} {{ form.performed_work_location.label_tag }} {{
+          form.performed_work_location }}
+        </div>
 
-      <div class="section">
-        <h3>Additional Information</h3>
-        {{ form.additional_information.label_tag }} {{ form.additional_information }}
-      </div>
+        <div class="section">
+          <h3>Education & Certifications</h3>
+          {{ form.educational_qualification.label_tag }} {{
+          form.educational_qualification }} {{
+          form.certifications_training.label_tag }} {{
+          form.certifications_training }} {{ form.awards_recognition.label_tag
+          }} {{ form.awards_recognition }}
+        </div>
 
-      <div class="section">
-        <h3>Document Upload</h3>
-        {{ form.resume_upload.label_tag }} {{ form.resume_upload }}
-      </div>
+        <div class="section">
+          <h3>Portfolio & Links</h3>
+          {{ form.portfolio_link.label_tag }} {{ form.portfolio_link }} {{
+          form.linkedin_profile.label_tag }} {{ form.linkedin_profile }} {{
+          form.imdb_profile.label_tag }} {{ form.imdb_profile }}
+        </div>
 
-      <div class="buttons">
-        <p style="margin:0 0 10px;color:#555;font-size:14px;">You can save a draft with partial details and finish later.</p>
-        <button type="button" class="cancel" onclick="window.history.back()">Cancel</button>
-        <button type="submit" class="save" name="action" value="save_draft">Save/Draft</button>
-        <button type="submit" class="submit" name="action" value="submit">Submit Profile</button>
-      </div>
-    </form>
-  </div>
+        <div class="section">
+          <h3>Additional Information</h3>
+          {{ form.additional_information.label_tag }} {{
+          form.additional_information }}
+        </div>
 
-  <!-- Confirmation Modal for Unsaved Changes -->
-  <div id="confirmModal" class="modal">
-    <div class="modal-content">
-      <h3>Unsaved Changes</h3>
-      <p>You have unsaved changes in your form. What would you like to do?</p>
-      <div class="modal-buttons">
-        <button type="button" class="modal-btn modal-btn-discard" onclick="discardAndLeave()">Discard Changes</button>
-        <button type="button" class="modal-btn modal-btn-draft" onclick="saveDraftAndLeave()">Save as Draft</button>
-        <button type="button" class="modal-btn modal-btn-cancel" onclick="closeModal()">Continue Editing</button>
+        <div class="section">
+          <h3>Document Upload</h3>
+          {{ form.resume_upload.label_tag }} {{ form.resume_upload }}
+        </div>
+
+        <div class="buttons">
+          <p style="margin: 0 0 10px; color: #555; font-size: 14px">
+            You can save a draft with partial details and finish later.
+          </p>
+          <button type="button" class="cancel" onclick="window.history.back()">
+            Cancel
+          </button>
+          <button type="submit" class="save" name="action" value="save_draft">
+            Save/Draft
+          </button>
+          <button type="submit" class="submit" name="action" value="submit">
+            Submit Profile
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Confirmation Modal for Unsaved Changes -->
+    <div id="confirmModal" class="modal">
+      <div class="modal-content">
+        <h3>Unsaved Changes</h3>
+        <p>You have unsaved changes in your form. What would you like to do?</p>
+        <div class="modal-buttons">
+          <button
+            type="button"
+            class="modal-btn modal-btn-discard"
+            onclick="discardAndLeave()"
+          >
+            Discard Changes
+          </button>
+          <button
+            type="button"
+            class="modal-btn modal-btn-draft"
+            onclick="saveDraftAndLeave()"
+          >
+            Save as Draft
+          </button>
+          <button
+            type="button"
+            class="modal-btn modal-btn-cancel"
+            onclick="closeModal()"
+          >
+            Continue Editing
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-  
-  <script>
-    let formChanged = false;
-    let isSubmitting = false;
 
-    // Track form changes
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.querySelector('.profile-form');
-      const inputs = form.querySelectorAll('input, textarea, select');
-      
-      // Monitor all form inputs for changes
-      inputs.forEach(input => {
-        input.addEventListener('input', function() {
-          formChanged = true;
+    <script>
+      let formChanged = false;
+      let isSubmitting = false;
+
+      // Track form changes
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector(".profile-form");
+        const inputs = form.querySelectorAll("input, textarea, select");
+
+        // Monitor all form inputs for changes
+        inputs.forEach((input) => {
+          input.addEventListener("input", function () {
+            formChanged = true;
+          });
+          input.addEventListener("change", function () {
+            formChanged = true;
+          });
         });
-        input.addEventListener('change', function() {
-          formChanged = true;
+
+        // Mark form as submitting when submit buttons are clicked
+        const submitButtons = form.querySelectorAll('button[type="submit"]');
+        submitButtons.forEach((btn) => {
+          btn.addEventListener("click", function () {
+            isSubmitting = true;
+          });
+        });
+
+        // Auto-hide flash messages after 4 seconds
+        const flashMessages = document.querySelectorAll(".flash");
+        flashMessages.forEach(function (flash) {
+          setTimeout(function () {
+            flash.classList.add("fade-out");
+            setTimeout(function () {
+              flash.remove();
+            }, 400);
+          }, 4000);
         });
       });
 
-      // Mark form as submitting when submit buttons are clicked
-      const submitButtons = form.querySelectorAll('button[type="submit"]');
-      submitButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-          isSubmitting = true;
-        });
-      });
+      // Handle back to dashboard button
+      function handleBackToDashboard() {
+        if (formChanged && !isSubmitting) {
+          // Show confirmation modal
+          document.getElementById("confirmModal").style.display = "flex";
+        } else {
+          // No changes, go back directly
+          window.location.href = '{% url "dashboard" %}';
+        }
+      }
 
-      // Auto-hide flash messages after 4 seconds
-      const flashMessages = document.querySelectorAll('.flash');
-      flashMessages.forEach(function(flash) {
-        setTimeout(function() {
-          flash.classList.add('fade-out');
-          setTimeout(function() {
-            flash.remove();
-          }, 400);
-        }, 4000);
-      });
-    });
-
-    // Handle back to dashboard button
-    function handleBackToDashboard() {
-      if (formChanged && !isSubmitting) {
-        // Show confirmation modal
-        document.getElementById('confirmModal').style.display = 'flex';
-      } else {
-        // No changes, go back directly
+      // Discard changes and leave
+      function discardAndLeave() {
+        formChanged = false;
         window.location.href = '{% url "dashboard" %}';
       }
-    }
 
-    // Discard changes and leave
-    function discardAndLeave() {
-      formChanged = false;
-      window.location.href = '{% url "dashboard" %}';
-    }
+      // Save as draft and leave
+      function saveDraftAndLeave() {
+        const form = document.querySelector(".profile-form");
 
-    // Save as draft and leave
-    function saveDraftAndLeave() {
-      const form = document.querySelector('.profile-form');
-      
-      // Create a hidden input to indicate save_draft action
-      const actionInput = document.createElement('input');
-      actionInput.type = 'hidden';
-      actionInput.name = 'action';
-      actionInput.value = 'save_draft';
-      form.appendChild(actionInput);
-      
-      // Mark as submitting to avoid showing modal again
-      isSubmitting = true;
-      formChanged = false;
-      
-      // Submit the form
-      form.submit();
-    }
+        // Create a hidden input to indicate save_draft action
+        const actionInput = document.createElement("input");
+        actionInput.type = "hidden";
+        actionInput.name = "action";
+        actionInput.value = "save_draft";
+        form.appendChild(actionInput);
 
-    // Close modal
-    function closeModal() {
-      document.getElementById('confirmModal').style.display = 'none';
-    }
+        // Mark as submitting to avoid showing modal again
+        isSubmitting = true;
+        formChanged = false;
 
-    // Handle browser back button and page refresh
-    window.addEventListener('beforeunload', function(e) {
-      if (formChanged && !isSubmitting) {
-        e.preventDefault();
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-        return e.returnValue;
+        // Submit the form
+        form.submit();
       }
-    });
-  </script>
-</body>
+
+      // Close modal
+      function closeModal() {
+        document.getElementById("confirmModal").style.display = "none";
+      }
+
+      // Handle browser back button and page refresh
+      window.addEventListener("beforeunload", function (e) {
+        if (formChanged && !isSubmitting) {
+          e.preventDefault();
+          e.returnValue =
+            "You have unsaved changes. Are you sure you want to leave?";
+          return e.returnValue;
+        }
+      });
+    </script>
+  </body>
 </html>
